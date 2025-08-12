@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Kage Live2D Pet</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: transparent;
+      overflow: hidden;
+    }
+    #live2d-canvas {
+      width: 100vw;
+      height: 100vh;
+    }
+    #live2d-container {
+      position: absolute;
+    }
+
+    #live2d-container.adjusting {
+      border: 2px dashed rgba(255, 100, 100, 0.8);
+      background-color: rgba(255, 255, 255, 0.1);
+      box-sizing: border-box;
+      cursor: move;
+    }
+    
+    #message-box {
+      position: absolute;
+      display: none;
+      max-width: 80%;
+      min-width: 100px;
+      padding: 10px 15px;
+      background-color: rgba(0, 0, 0, 0.7);
+      color: white;
+      border-radius: 8px;
+      font-size: 16px;
+      text-align: center;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+      z-index: 10;
+      
+      transform: translateX(-50%);
+      
+      pointer-events: none;
+    }
+
+    #live2d-container.adjusting #message-box.adjusting {
+      display: block !important;
+      pointer-events: auto;
+      cursor: move;
+      border: 1px dashed #ffeb3b;
+      background-color: rgba(0, 0, 0, 0.5);
+    }
+  </style>
+</head>
+<body>
+  <div id="message-box"></div>
+  
+  <div id="live2d-container"></div>
+  <script src="https://cdn.jsdelivr.net/gh/dylanNew/live2d/webgl/Live2D/lib/live2d.min.js"></script>
+
+  <script src="https://cubism.live2d.com/sdk-web/cubismcore/live2dcubismcore.min.js"></script>
+
+  <script src="./renderer.js"></script>
+</body>
+</html>

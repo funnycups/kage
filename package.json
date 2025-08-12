@@ -1,0 +1,28 @@
+{
+  "name": "kage",
+  "version": "1.0.0",
+  "description": "An universal Live2D renderer providing interaction API.",
+  "keywords": [
+    "kage",
+    "live2d",
+    "petto"
+  ],
+  "license": "GPL-3.0-or-later",
+  "author": "FunnyCups",
+  "type": "commonjs",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "electron-store": "^10.1.0",
+    "get-windows": "^9.2.0",
+    "i18next": "^25.3.2",
+    "i18next-fs-backend": "^2.6.0",
+    "pixi-live2d-display": "^0.4.0",
+    "pixi.js": "^6.5.10",
+    "uuid": "^11.1.0",
+    "ws": "^8.18.3"
+  }
+}
