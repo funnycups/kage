@@ -13,10 +13,15 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dist": "electron-builder",
+    "dist:win": "electron-builder -w zip",
+    "dist:linux": "electron-builder -l tar.gz",
+    "dist:mac": "electron-builder -m zip",
+    "postinstall": "electron-builder install-app-deps"
   },
   "dependencies": {
-    "electron-store": "^10.1.0",
+    "electron-store": "^8.2.0",
     "get-windows": "^9.2.0",
     "i18next": "^25.3.2",
     "i18next-fs-backend": "^2.6.0",
@@ -24,5 +29,57 @@
     "pixi.js": "^6.5.10",
     "uuid": "^11.1.0",
     "ws": "^8.18.3"
+  },
+  "devDependencies": {
+    "electron": "^31.3.0",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.funnycups.kage",
+    "productName": "Kage",
+    "directories": {
+      "output": "dist"
+    },
+    "asar": true,
+    "files": [
+      "**/*",
+      "!dist/**",
+      "!.git/**",
+      "!.github/**",
+      "!models/**",
+      "!locales/**",
+      "!build/tray-icon.png"
+    ],
+    "extraResources": [
+      { "from": "models", "to": "models" },
+      { "from": "locales", "to": "locales" },
+      { "from": "build/tray-icon.png", "to": "icons/tray-icon.png" }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "zip",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "artifactName": "${productName}-win-${arch}.zip"
+    },
+    "linux": {
+      "target": [
+        "tar.gz"
+      ],
+      "category": "Utility",
+      "artifactName": "${productName}-linux-${arch}.tar.gz"
+    },
+    "mac": {
+      "target": [
+        "zip"
+      ],
+      "category": "public.app-category.utilities",
+      "artifactName": "${productName}-mac-${arch}.zip",
+      "hardenedRuntime": false
+    }
   }
 }

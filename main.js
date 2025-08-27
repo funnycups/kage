@@ -31,7 +31,12 @@ const __dirname = path.dirname(__filename);
 
 const appVersion = app.getVersion();
 
-const defaultModelPath = path.join(__dirname, 'models', 'HK416_3401', 'normal.model3.json');
+function resolveResource(...segments) {
+  const base = app.isPackaged ? process.resourcesPath : __dirname;
+  return path.join(base, ...segments);
+}
+
+const defaultModelPath = resolveResource('models', 'HK416_3401', 'normal.model3.json');
 
 const store = new Store({
   defaults: {
@@ -487,7 +492,7 @@ ipcMain.on('disable-mouse-interaction', () => {
 
 
 function createTray() {
-  const iconPath = path.join(__dirname, 'tray.png');
+  const iconPath = resolveResource('icons', 'tray-icon.png');
   const icon = nativeImage.createFromPath(iconPath);
   
   if (process.platform === 'darwin') {
@@ -611,7 +616,9 @@ const i18nextOptions = {
   ns: ['translation'],
   defaultNS: 'translation',
   backend: {
-    loadPath: path.join(__dirname, 'locales/{{lng}}/{{ns}}.json')
+    loadPath: app.isPackaged
+      ? path.join(process.resourcesPath, 'locales/{{lng}}/{{ns}}.json')
+      : path.join(__dirname, 'locales/{{lng}}/{{ns}}.json')
   },
   debug: store.get('debugMode')
 };
