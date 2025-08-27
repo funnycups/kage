@@ -75,7 +75,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     enableSoundInput.checked = settings.enableSound;
     debugModeInput.checked = settings.debugMode;
     document.getElementById('enableMousePassthrough').checked = settings.enableMousePassthrough !== false;
-    appVersionSpan.textContent = settings.appVersion;
+    const versionInfo = await window.electronAPI.getVersion();
+    appVersionSpan.textContent = versionInfo.version;
     languageSelector.value = settings.language || 'zh-CN';
 
     const key = isAdjustModeEnabled ? 'disableAdjustMode' : 'enableAdjustMode';

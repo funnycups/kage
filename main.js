@@ -26,7 +26,7 @@ const i18next = require('i18next');
 const FsBackend = require('i18next-fs-backend');
 const { activeWindow } = require('get-windows');
 
-const appVersion = require('./package.json').version;
+const appVersion = app.getVersion();
 
 const defaultModelPath = path.join(__dirname, 'models', 'HK416_3401', 'normal.model3.json');
 
@@ -34,7 +34,6 @@ const store = new Store({
   defaults: {
     wsPort: 23333,
     modelPath: defaultModelPath,
-    appVersion: appVersion,
     modelBounds: { width: 400, height: 300, x: 100, y: 100 },
     enableSound: true,
     messageBoxPosition: { top: 10, left: 50 },
@@ -47,10 +46,6 @@ function logDebug(...args) {
   if (store.get('debugMode')) {
     console.log(...args);
   }
-}
-
-if (store.get('appVersion') !== appVersion) {
-  store.set('appVersion', appVersion);
 }
 
 
@@ -357,6 +352,13 @@ registerApiHandler('showTextMessage', async (params) => {
 
 ipcMain.handle('get-settings', () => {
   return store.store;
+});
+
+ipcMain.handle('get-version', () => {
+  return {
+    version: appVersion,
+    electronVersion: process.versions.electron
+  };
 });
 
 ipcMain.handle('select-model-file', async () => {

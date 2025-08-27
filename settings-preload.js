@@ -21,6 +21,7 @@ const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('electronAPI', {
   getSettings: () => ipcRenderer.invoke('get-settings'),
+  getVersion: () => ipcRenderer.invoke('get-version'),
   saveSettings: (settings) => ipcRenderer.invoke('save-settings', settings),
   selectModelFile: () => ipcRenderer.invoke('select-model-file'),
   toggleAdjustMode: (enable) => ipcRenderer.invoke('toggle-adjust-mode', enable),
