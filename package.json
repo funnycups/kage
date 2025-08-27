@@ -14,10 +14,10 @@
   "scripts": {
     "start": "electron .",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dist": "electron-builder",
-    "dist:win": "electron-builder -w zip",
-    "dist:linux": "electron-builder -l tar.gz",
-    "dist:mac": "electron-builder -m zip",
+    "dist": "electron-builder --publish never",
+    "dist:win": "electron-builder -w zip --publish never",
+    "dist:linux": "electron-builder -l tar.gz --publish never",
+    "dist:mac": "electron-builder -m zip --publish never",
     "postinstall": "electron-builder install-app-deps"
   },
   "dependencies": {
@@ -37,6 +37,7 @@
   "build": {
     "appId": "com.funnycups.kage",
     "productName": "Kage",
+    "publish": "never",
     "directories": {
       "output": "dist"
     },
