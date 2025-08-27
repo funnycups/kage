@@ -17,14 +17,17 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 Project home: https://github.com/funnycups/kage
 */
-const { app, BrowserWindow, Tray, Menu, nativeImage, ipcMain, dialog, screen } = require('electron');
-const path = require('path');
-const { execFile } = require('child_process');
-const WebSocket = require('ws');
-const Store = require('electron-store').default;
-const i18next = require('i18next');
-const FsBackend = require('i18next-fs-backend');
-const { activeWindow } = require('get-windows');
+import { app, BrowserWindow, Tray, Menu, nativeImage, ipcMain, dialog, screen } from 'electron';
+import path from 'path';
+import { WebSocketServer, WebSocket } from 'ws';
+import Store from 'electron-store';
+import i18next from 'i18next';
+import FsBackend from 'i18next-fs-backend';
+import { activeWindow } from 'get-windows';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const appVersion = app.getVersion();
 
@@ -114,7 +117,7 @@ function createSettingsWindow() {
     title: i18next.t('settingsTitle'),
     resizable: false,
     webPreferences: {
-      preload: path.join(__dirname, 'settings-preload.js'),
+      preload: path.join(__dirname, 'settings-preload.cjs'),
       contextIsolation: true,
       nodeIntegration: false
     }
@@ -137,7 +140,7 @@ function startWebSocketServer() {
     return;
   }
 
-  wss = new WebSocket.Server({ port });
+  wss = new WebSocketServer({ port });
 
   wss.on('listening', () => {
     logDebug(`WebSocket Server listening on ws://localhost:${port}`);

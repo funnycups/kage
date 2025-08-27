@@ -9,7 +9,7 @@
   ],
   "license": "GPL-3.0-or-later",
   "author": "FunnyCups",
-  "type": "commonjs",
+  "type": "module",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
