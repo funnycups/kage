@@ -19,15 +19,8 @@ Project home: https://github.com/funnycups/kage
 */
 console.log("Renderer process started.");
 
-if (!window.Live2D) {
-    console.error("Live2D Cubism 2 runtime (live2d.min.js) is not loaded!");
-}
-if (!window.Live2DCubismCore) {
-    console.error("Live2D Cubism Core (live2dcubismcore.min.js) is not loaded!");
-}
-
 const PIXI = require('pixi.js');
-const { Live2DModel, SoundManager } = require('pixi-live2d-display');
+const { Live2DModel, SoundManager } = require('pixi-live2d-display/cubism4');
 const path = require('path');
 const fs = require('fs');
 const url = require('url');
@@ -74,8 +67,12 @@ let initialBounds = {};
 
 
 async function initLive2D() {
+  if (!window.Live2DCubismCore) {
+    console.error("Live2D Cubism Core (live2dcubismcore.min.js) is not loaded!");
+    return;
+  }
   app = new PIXI.Application({
-    transparent: true,
+    backgroundAlpha: 0,
     autoStart: true,
     autoDensity: true,
     resolution: window.devicePixelRatio || 1,
