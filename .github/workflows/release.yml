@@ -37,11 +37,33 @@ jobs:
       - name: Build
         run: ${{ matrix.build_cmd }}
 
+      - name: Repack (Windows)
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
+        run: |
+          if (Test-Path 'dist/Kage-win-x64.zip') { Remove-Item -Force 'dist/Kage-win-x64.zip' }
+          Compress-Archive -Path 'dist/win-unpacked/*' -DestinationPath 'dist/Kage-win-x64.zip' -Force
+
+      - name: Repack (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          rm -f dist/Kage-linux-x64.tar.gz
+          tar -C dist/linux-unpacked -czf dist/Kage-linux-x64.tar.gz .
+
+      - name: Repack (macOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          rm -f dist/Kage-mac-arm64.zip
+          APP_PATH=$(echo dist/mac*/Kage.app)
+          ditto -c -k --sequesterRsrc --keepParent "$APP_PATH" "dist/Kage-mac-arm64.zip"
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: Kage-${{ runner.os }}
-          path: dist/*
+          path: |
+            dist/*.zip
+            dist/*.tar.gz
 
   release:
     needs: build
