@@ -26,13 +26,13 @@ jobs:
             build_cmd: npm run dist:mac
             arch: arm64
             artifact_stage_dir: ci-out/macos-arm64
-            artifact_path: ci-out/macos-arm64/Kage.app
+            artifact_path: ci-out/macos-arm64/**
             artifact_name: CI-macOS-arm64
           - os: macos-13
             build_cmd: npm run dist:mac
             arch: x64
             artifact_stage_dir: ci-out/macos-x64
-            artifact_path: ci-out/macos-x64/Kage.app
+            artifact_path: ci-out/macos-x64/**
             artifact_name: CI-macOS-x64
 
     steps:
