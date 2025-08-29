@@ -73,7 +73,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Kage-${{ runner.os }}
+          name: Kage-${{ runner.os }}-${{ matrix.arch }}
           path: |
             dist/*.zip
             dist/*.tar.gz
