@@ -17,12 +17,23 @@ jobs:
           - os: windows-latest
             build_cmd: npm run dist:win
             artifact_path: dist/win-unpacked/*
+            artifact_name: CI-Windows
           - os: ubuntu-latest
             build_cmd: npm run dist:linux
             artifact_path: dist/linux-unpacked/*
+            artifact_name: CI-Linux
           - os: macos-latest
             build_cmd: npm run dist:mac
-            artifact_path: dist/mac*/Kage.app
+            arch: arm64
+            artifact_stage_dir: ci-out/macos-arm64
+            artifact_path: ci-out/macos-arm64/Kage.app
+            artifact_name: CI-macOS-arm64
+          - os: macos-13
+            build_cmd: npm run dist:mac
+            arch: x64
+            artifact_stage_dir: ci-out/macos-x64
+            artifact_path: ci-out/macos-x64/Kage.app
+            artifact_name: CI-macOS-x64
 
     steps:
       - name: Checkout
@@ -40,8 +51,16 @@ jobs:
       - name: Build
         run: ${{ matrix.build_cmd }}
 
+      - name: Stage macOS artifact (flatten)
+        if: runner.os == 'macOS'
+        run: |
+          rm -rf "${{ matrix.artifact_stage_dir }}"
+          mkdir -p "${{ matrix.artifact_stage_dir }}"
+          APP_PATH=$(echo dist/mac*/Kage.app)
+          cp -R "$APP_PATH" "${{ matrix.artifact_stage_dir }}/Kage.app"
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: CI-${{ runner.os }}
+          name: ${{ matrix.artifact_name }}
           path: ${{ matrix.artifact_path }}

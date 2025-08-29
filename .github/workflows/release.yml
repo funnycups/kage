@@ -16,10 +16,16 @@ jobs:
         include:
           - os: windows-latest
             build_cmd: npm run dist:win
+            arch: x64
           - os: ubuntu-latest
             build_cmd: npm run dist:linux
+            arch: x64
           - os: macos-latest
             build_cmd: npm run dist:mac
+            arch: arm64
+          - os: macos-13
+            build_cmd: npm run dist:mac
+            arch: x64
 
     steps:
       - name: Checkout
@@ -53,9 +59,16 @@ jobs:
       - name: Repack (macOS)
         if: matrix.os == 'macos-latest'
         run: |
-          rm -f dist/Kage-mac-arm64.zip
+          rm -f "dist/Kage-mac-${{ matrix.arch }}.zip"
           APP_PATH=$(echo dist/mac*/Kage.app)
-          ditto -c -k --sequesterRsrc --keepParent "$APP_PATH" "dist/Kage-mac-arm64.zip"
+          ditto -c -k --sequesterRsrc --keepParent "$APP_PATH" "dist/Kage-mac-${{ matrix.arch }}.zip"
+
+      - name: Repack (macOS x64)
+        if: matrix.os == 'macos-13'
+        run: |
+          rm -f "dist/Kage-mac-${{ matrix.arch }}.zip"
+          APP_PATH=$(echo dist/mac*/Kage.app)
+          ditto -c -k --sequesterRsrc --keepParent "$APP_PATH" "dist/Kage-mac-${{ matrix.arch }}.zip"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
