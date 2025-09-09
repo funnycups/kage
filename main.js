@@ -24,7 +24,7 @@ function resolveResource(...segments) {
   return path.join(base, ...segments);
 }
 
-const defaultModelPath = resolveResource('models', 'HK416_3401', 'normal.model3.json');
+const defaultModelPath = resolveResource('models', 'hiyori', 'hiyori_free_t08.model3.json');
 
 const store = new Store({
   defaults: {
