@@ -21,6 +21,24 @@ const messageBoxContent = document.getElementById('message-box-content') || mess
 const messageBoxResizeHandle = messageBox ? messageBox.querySelector('.resize-handle') : null;
 let messageTimeoutId = null;
 
+let i18nState = { lng: 'en', resources: {} };
+function t(key) { return i18nState.resources[key] || key; }
+async function initI18n() {
+  try {
+    const init = await ipcRenderer.invoke('get-i18n-init');
+    if (init && init.resources) i18nState = init;
+  } catch (e) { console.error("Failed to initialize i18n:", e); }
+}
+initI18n();
+ipcRenderer.on('language-changed', (event, { lng, resources }) => {
+  if (resources) {
+    i18nState = { lng, resources };
+    if (messageBoxContent && messageBoxContent.dataset.tempAdjustPlaceholder === 'true') {
+      messageBoxContent.textContent = t('dragMessageBoxToAdjust');
+    }
+  }
+});
+
 function showMessage(message, duration) {
   if (!messageBox) return;
   if (messageTimeoutId) {
@@ -253,7 +271,10 @@ ipcRenderer.on('adjust-mode-changed', (event, isEnabled) => {
     disableModelHoverInteraction(currentModel);
     if (messageBox) {
       messageBox.classList.add('adjusting');
-      if (messageBoxContent && !messageBoxContent.textContent) messageBoxContent.textContent = "拖动调整消息框位置";
+      if (messageBoxContent && !messageBoxContent.textContent) {
+        messageBoxContent.dataset.tempAdjustPlaceholder = 'true';
+        messageBoxContent.textContent = t('dragMessageBoxToAdjust');
+      }
       setupMessageBoxDragging();
     }
     setupModelContainerAdjustment();
@@ -265,7 +286,8 @@ ipcRenderer.on('adjust-mode-changed', (event, isEnabled) => {
     }
     if (messageBox) {
       messageBox.classList.remove('adjusting');
-      if (messageBoxContent && messageBoxContent.textContent === "拖动调整消息框位置") {
+      if (messageBoxContent && messageBoxContent.dataset.tempAdjustPlaceholder === 'true') {
+        delete messageBoxContent.dataset.tempAdjustPlaceholder;
         messageBoxContent.textContent = "";
         if (!messageTimeoutId) messageBox.style.display = 'none';
       }

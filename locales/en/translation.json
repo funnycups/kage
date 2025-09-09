@@ -27,5 +27,6 @@
   "portInUse": "Port {{port}} is already in use. Please change the port in the settings or close the application using it.",
   "toggleWindow": "Show/Hide",
   "settings": "Settings",
-  "exit": "Exit"
+  "exit": "Exit",
+  "dragMessageBoxToAdjust": "Drag to reposition the message box"
 }

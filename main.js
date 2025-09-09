@@ -421,7 +421,7 @@ ipcMain.handle('save-settings', (event, settings) => {
 
     return { success: true };
   } catch (error) {
-    console.error('保存设置失败:', error);
+    console.error('Error occurred while saving settings:', error);
     return { success: false, error: error.message };
   }
 });

@@ -27,5 +27,6 @@
   "portInUse": "端口 {{port}} 已被占用，请在设置中更改端口或关闭占用该端口的程序。",
   "toggleWindow": "显示/隐藏",
   "settings": "设置",
-  "exit": "退出"
+  "exit": "退出",
+  "dragMessageBoxToAdjust": "拖动调整消息框位置"
 }
