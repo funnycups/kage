@@ -33,6 +33,7 @@ const store = new Store({
     modelBounds: { width: 400, height: 300, x: 100, y: 100 },
     enableSound: true,
     messageBoxPosition: { top: 10, left: 50 },
+    messageBoxSize: null,
     debugMode: false,
     enableMousePassthrough: true
   }
@@ -449,6 +450,13 @@ ipcMain.on('save-messagebox-position', (event, position) => {
   if (position && typeof position.top === 'number' && typeof position.left === 'number') {
     store.set('messageBoxPosition', position);
     logDebug("Message box position saved:", position);
+  }
+});
+
+ipcMain.on('save-messagebox-size', (event, size) => {
+  if (size && typeof size.width === 'number') {
+    store.set('messageBoxSize', { width: size.width });
+    logDebug('Message box size saved:', size);
   }
 });
 
