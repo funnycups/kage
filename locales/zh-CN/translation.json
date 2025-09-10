@@ -28,5 +28,18 @@
   "toggleWindow": "显示/隐藏",
   "settings": "设置",
   "exit": "退出",
-  "dragMessageBoxToAdjust": "拖动调整消息框位置"
+  "dragMessageBoxToAdjust": "拖动调整消息框位置",
+  "updateAvailableTitle": "发现新版本",
+  "updateAvailableMessage": "检测到新版本。当前: {{current}}  →  最新: {{latest}}",
+  "viewChangelog": "查看更新说明",
+  "openDownloadPage": "打开下载页面",
+  "downloadDirectly": "直接下载",
+  "later": "稍后再说",
+  "downloadingUpdate": "正在下载更新...",
+  "downloadCompletedOpenFolder": "更新包已下载，是否打开所在文件夹？",
+  "downloadFailed": "下载更新失败：{{error}}",
+  "noSuitableAsset": "未找到合适的安装包，将为您打开发布页面。",
+  "updateCheckFailed": "检查更新失败。",
+  "checkForUpdates": "检查更新",
+  "alreadyLatest": "当前已是最新版本。"
 }

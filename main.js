@@ -5,7 +5,7 @@
  *
  * Copyright (C) 2025 FunnyCups (https://github.com/funnycups)
  */
-import { app, BrowserWindow, Tray, Menu, nativeImage, ipcMain, dialog, screen } from 'electron';
+import { app, BrowserWindow, Tray, Menu, nativeImage, ipcMain, dialog, screen, shell } from 'electron';
 import path from 'path';
 import { WebSocketServer, WebSocket } from 'ws';
 import Store from 'electron-store';
@@ -13,6 +13,8 @@ import i18next from 'i18next';
 import FsBackend from 'i18next-fs-backend';
 import { activeWindow } from 'get-windows';
 import { fileURLToPath } from 'url';
+import fs from 'fs';
+import https from 'https';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -604,6 +606,218 @@ function startFullscreenListener() {
   }, 2000);
 }
 
+// -------------------- Update Check --------------------
+
+function normalizeVersion(v) {
+  if (!v) return '0.0.0';
+  return String(v).replace(/^v/i, '').trim();
+}
+
+function compareVersions(a, b) {
+  const pa = normalizeVersion(a).split('.').map(n => parseInt(n, 10) || 0);
+  const pb = normalizeVersion(b).split('.').map(n => parseInt(n, 10) || 0);
+  for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+    const na = pa[i] || 0;
+    const nb = pb[i] || 0;
+    if (na > nb) return 1;
+    if (na < nb) return -1;
+  }
+  return 0;
+}
+
+function fetchJson(url) {
+  return new Promise((resolve, reject) => {
+    const req = https.get(url, {
+      headers: {
+        'User-Agent': 'Kage-Updater',
+        'Accept': 'application/vnd.github+json'
+      }
+    }, (res) => {
+      if (res.statusCode && res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+        // handle redirects
+        fetchJson(res.headers.location).then(resolve).catch(reject);
+        return;
+      }
+      if (res.statusCode !== 200) {
+        reject(new Error(`HTTP ${res.statusCode}`));
+        return;
+      }
+      let data = '';
+      res.on('data', (chunk) => { data += chunk; });
+      res.on('end', () => {
+        try {
+          resolve(JSON.parse(data));
+        } catch (e) {
+          reject(e);
+        }
+      });
+    });
+    req.on('error', reject);
+  });
+}
+
+function choosePlatformAsset(assets) {
+  if (!Array.isArray(assets)) return null;
+  const platform = process.platform; // 'win32' | 'darwin' | 'linux'
+  const arch = process.arch; // 'x64' | 'arm64' | ...
+  const desiredArch = arch === 'x64' || arch === 'arm64' ? arch : 'x64';
+
+  const matchers = {
+    win32: {
+      primary: new RegExp(`^kage-win-${desiredArch}\\.zip$`, 'i'),
+      fallback: /win-.*\.zip$/i
+    },
+    darwin: {
+      primary: new RegExp(`^kage-mac-${desiredArch}\\.zip$`, 'i'),
+      fallback: /mac-.*\.zip$/i
+    },
+    linux: {
+      primary: new RegExp(`^kage-linux-${desiredArch}\\.tar\.gz$`, 'i'),
+      fallback: /linux-.*\.tar\.gz$/i
+    }
+  };
+
+  const { primary, fallback } = matchers[platform] || {};
+  const lower = assets.map(a => ({ a, name: String(a.name || '').toLowerCase() }));
+
+  if (primary) {
+    const p = lower.find(({ name }) => primary.test(name));
+    if (p) return p.a;
+  }
+  if (fallback) {
+    const f = lower.find(({ name }) => fallback.test(name));
+    if (f) return f.a;
+  }
+  return null;
+}
+
+function downloadToFile(url, destPath) {
+  return new Promise((resolve, reject) => {
+    const file = fs.createWriteStream(destPath);
+    https.get(url, (res) => {
+      if (res.statusCode && res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+        // redirect
+        downloadToFile(res.headers.location, destPath).then(resolve).catch(reject);
+        return;
+      }
+      if (res.statusCode !== 200) {
+        reject(new Error(`HTTP ${res.statusCode}`));
+        return;
+      }
+      res.pipe(file);
+      file.on('finish', () => file.close(() => resolve(destPath)));
+    }).on('error', (err) => {
+      fs.unlink(destPath, () => reject(err));
+    });
+  });
+}
+
+async function promptUpdate(release, latestVersion) {
+  const current = appVersion;
+  const buttons = [];
+  const actions = [];
+
+  // View release notes
+  buttons.push(i18next.t('viewChangelog'));
+  actions.push(() => {
+    if (release && release.html_url) {
+      shell.openExternal(release.html_url);
+    } else {
+      shell.openExternal('https://github.com/funnycups/kage/releases');
+    }
+  });
+
+  // Open download page
+  buttons.push(i18next.t('openDownloadPage'));
+  actions.push(() => shell.openExternal('https://github.com/funnycups/kage/releases/latest'));
+
+  // Direct download on Windows only
+  if (process.platform === 'win32') {
+    buttons.push(i18next.t('downloadDirectly'));
+    actions.push(async () => {
+      try {
+        const asset = choosePlatformAsset(release?.assets || []);
+        if (!asset || !asset.browser_download_url) {
+          await dialog.showMessageBox({
+            type: 'info',
+            message: i18next.t('noSuitableAsset')
+          });
+          shell.openExternal('https://github.com/funnycups/kage/releases/latest');
+          return;
+        }
+        await dialog.showMessageBox({ type: 'info', message: i18next.t('downloadingUpdate') });
+        const downloadsDir = app.getPath('downloads');
+        const filename = `${asset.name || `Kage-${latestVersion}-win.zip`}`;
+        const target = path.join(downloadsDir, filename);
+        await downloadToFile(asset.browser_download_url, target);
+        const r = await dialog.showMessageBox({
+          type: 'question',
+          buttons: ['OK', i18next.t('later')],
+          defaultId: 0,
+          message: i18next.t('downloadCompletedOpenFolder')
+        });
+        if (r.response === 0) {
+          // Show the file in the folder
+          if (fs.existsSync(target)) {
+            shell.showItemInFolder(target);
+          }
+        }
+      } catch (err) {
+        await dialog.showMessageBox({
+          type: 'error',
+          message: i18next.t('downloadFailed', { error: String(err?.message || err) })
+        });
+      }
+    });
+  }
+
+  // Later
+  buttons.push(i18next.t('later'));
+  actions.push(() => {});
+
+  const { response } = await dialog.showMessageBox({
+    type: 'info',
+    title: i18next.t('updateAvailableTitle'),
+    message: i18next.t('updateAvailableMessage', { current, latest: latestVersion }) + (release?.name ? `\n${release.name}` : ''),
+    buttons,
+    defaultId: Math.min(1, buttons.length - 1),
+    cancelId: buttons.length - 1
+  });
+
+  const action = actions[response];
+  if (typeof action === 'function') await action();
+}
+
+async function checkForUpdates() {
+  try {
+    const latest = await fetchJson('https://api.github.com/repos/funnycups/kage/releases/latest');
+    const latestVersion = normalizeVersion(latest.tag_name || latest.name || '');
+    if (compareVersions(latestVersion, appVersion) > 0) {
+      await promptUpdate(latest, latestVersion);
+    }
+  } catch (e) {
+    logDebug('Update check failed:', e);
+  }
+}
+
+// Manual update check from settings
+ipcMain.handle('manual-check-updates', async () => {
+  try {
+    const latest = await fetchJson('https://api.github.com/repos/funnycups/kage/releases/latest');
+    const latestVersion = normalizeVersion(latest.tag_name || latest.name || '');
+    if (compareVersions(latestVersion, appVersion) > 0) {
+      await promptUpdate(latest, latestVersion);
+      return { success: true, hasUpdate: true, current: appVersion, latest: latestVersion };
+    } else {
+      await dialog.showMessageBox({ type: 'info', message: i18next.t('alreadyLatest') });
+      return { success: true, hasUpdate: false, current: appVersion, latest: latestVersion };
+    }
+  } catch (e) {
+    await dialog.showMessageBox({ type: 'error', message: i18next.t('updateCheckFailed') });
+    return { success: false, error: String(e?.message || e) };
+  }
+});
+
 
 const i18nextOptions = {
   fallbackLng: 'en',
@@ -634,6 +848,8 @@ app.whenReady().then(async () => {
   createTray();
   startWebSocketServer();
   startFullscreenListener();
+  // Check for updates on startup (non-blocking)
+  setTimeout(() => { checkForUpdates(); }, 1500);
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {

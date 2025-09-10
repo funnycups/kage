@@ -28,5 +28,18 @@
   "toggleWindow": "Show/Hide",
   "settings": "Settings",
   "exit": "Exit",
-  "dragMessageBoxToAdjust": "Drag to reposition the message box"
+  "dragMessageBoxToAdjust": "Drag to reposition the message box",
+  "updateAvailableTitle": "Update Available",
+  "updateAvailableMessage": "A new version is available. Current: {{current}}  →  Latest: {{latest}}",
+  "viewChangelog": "View Release Notes",
+  "openDownloadPage": "Open Download Page",
+  "downloadDirectly": "Download Directly",
+  "later": "Later",
+  "downloadingUpdate": "Downloading update...",
+  "downloadCompletedOpenFolder": "Update package downloaded. Open folder?",
+  "downloadFailed": "Failed to download the update: {{error}}",
+  "noSuitableAsset": "No suitable installer found in the release assets. Opening releases page instead.",
+  "updateCheckFailed": "Failed to check for updates.",
+  "checkForUpdates": "Check for Updates",
+  "alreadyLatest": "You're up to date."
 }

@@ -17,4 +17,5 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getI18nInit: () => ipcRenderer.invoke('get-i18n-init'),
   changeLanguage: (lng) => ipcRenderer.invoke('change-language', lng),
   onLanguageChanged: (callback) => ipcRenderer.on('language-changed', (event, ...args) => callback(...args))
+  ,checkForUpdates: () => ipcRenderer.invoke('manual-check-updates')
 });

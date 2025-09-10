@@ -44,6 +44,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const selectModelPathButton = document.getElementById('selectModelPath');
   const toggleAdjustModeButton = document.getElementById('toggleAdjustMode');
   const languageSelector = document.getElementById('language-selector');
+  const checkUpdatesButton = document.getElementById('checkUpdates');
 
   let isAdjustModeEnabled = false;
 
@@ -133,5 +134,20 @@ document.addEventListener('DOMContentLoaded', async () => {
   window.electronAPI.onLanguageChanged(({ lng, resources }) => {
     window.i18n = { lng, resources };
     updateUI();
+  });
+
+  checkUpdatesButton.addEventListener('click', async () => {
+    try {
+      const result = await window.electronAPI.checkForUpdates();
+      if (result && result.hasUpdate) {
+        showMessage('updateAvailableTitle', 'success');
+      } else if (result && result.success) {
+        showMessage('alreadyLatest', 'success');
+      } else {
+        showMessage('updateCheckFailed', 'error');
+      }
+    } catch (e) {
+      showMessage('updateCheckFailed', 'error');
+    }
   });
 });
